@@ -1,5 +1,19 @@
 package main
 
-func main() {
+import (
+	"fmt"
+	"os"
+	"os/user"
 
+	"github.com/akane9506/fake-ts/repl"
+)
+
+func main() {
+	user, err := user.Current()
+	if err != nil {
+		panic(err)
+	}
+	fmt.Printf("Hello %s\n", user.Username)
+	fmt.Print("Feel free to type in commands\n")
+	repl.Start(os.Stdin, os.Stdout)
 }
