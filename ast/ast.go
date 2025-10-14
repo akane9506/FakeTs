@@ -2,6 +2,7 @@ package ast
 
 import (
 	"bytes"
+	"strings"
 
 	"github.com/akane9506/fake-ts/token"
 )
@@ -42,6 +43,51 @@ func (p *Program) String() string {
 	return out.String()
 }
 
+// ****** Literals ******
+
+// Integer literal
+type IntegerLiteral struct {
+	Token token.Token
+	Value int64
+}
+
+func (il *IntegerLiteral) expressionNode()      {}
+func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
+func (il *IntegerLiteral) String() string       { return il.Token.Literal }
+
+// Boolean literal
+type Boolean struct {
+	Token token.Token
+	Value bool
+}
+
+func (b *Boolean) expressionNode()      {}
+func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
+func (b *Boolean) String() string       { return b.Token.Literal }
+
+// Function literal
+type FunctionLiteral struct {
+	Token      token.Token
+	Parameters []*Identifier
+	Body       *BlockStatement
+}
+
+func (fl *FunctionLiteral) expressionNode()      {}
+func (fl *FunctionLiteral) TokenLiteral() string { return fl.Token.Literal }
+func (fl *FunctionLiteral) String() string {
+	var out bytes.Buffer
+	params := []string{}
+	for _, p := range fl.Parameters {
+		params = append(params, p.String())
+	}
+	out.WriteString(fl.TokenLiteral())
+	out.WriteString("(")
+	out.WriteString(strings.Join(params, ", "))
+	out.WriteString(") ")
+	out.WriteString(fl.Body.String())
+	return out.String()
+}
+
 // ****** Identifier ******
 type Identifier struct {
 	Token token.Token // the token.IDENT token
@@ -52,18 +98,9 @@ func (i *Identifier) expressionNode()      {}
 func (i *Identifier) TokenLiteral() string { return i.Token.Literal }
 func (i *Identifier) String() string       { return i.Value }
 
-// Boolean literal
+// ****** Statements ******
 
-type Boolean struct {
-	Token token.Token
-	Value bool
-}
-
-func (b *Boolean) expressionNode()      {}
-func (b *Boolean) TokenLiteral() string { return b.Token.Literal }
-func (b *Boolean) String() string       { return b.Token.Literal }
-
-// ****** Let Statement ******
+// Let Statement
 type LetStatement struct {
 	Token token.Token // the token.LET token
 	Name  *Identifier
@@ -84,7 +121,7 @@ func (ls *LetStatement) String() string {
 	return out.String()
 }
 
-// ****** Return Statement ******
+// Return Statement
 type ReturnStatement struct {
 	Token       token.Token
 	ReturnValue Expression
@@ -102,7 +139,7 @@ func (rs *ReturnStatement) String() string {
 	return out.String()
 }
 
-// ****** Expression Statement ******
+// Expression Statement
 type ExpressionStatement struct {
 	Token      token.Token
 	Expression Expression
@@ -117,15 +154,25 @@ func (es *ExpressionStatement) String() string {
 	return ""
 }
 
-type IntegerLiteral struct {
-	Token token.Token
-	Value int64
+// Block statement
+type BlockStatement struct {
+	Token      token.Token // the { token
+	Statements []Statement
 }
 
-func (il *IntegerLiteral) expressionNode()      {}
-func (il *IntegerLiteral) TokenLiteral() string { return il.Token.Literal }
-func (il *IntegerLiteral) String() string       { return il.Token.Literal }
+func (bs *BlockStatement) statementNode()       {}
+func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
+func (bs *BlockStatement) String() string {
+	var out bytes.Buffer
+	for _, s := range bs.Statements {
+		out.WriteString(s.String())
+	}
+	return out.String()
+}
 
+// ****** Expressions ******
+
+// Prefix expression
 type PrefixExpression struct {
 	Token    token.Token // The prefix token, e.g. !
 	Operator string
@@ -145,6 +192,7 @@ func (pe *PrefixExpression) String() string {
 	return out.String()
 }
 
+// Infix expression
 type InfixExpression struct {
 	Token    token.Token
 	Left     Expression
@@ -183,22 +231,6 @@ func (ie *IfExpression) String() string {
 	if ie.Alternative != nil {
 		out.WriteString("else ")
 		out.WriteString(ie.Alternative.String())
-	}
-	return out.String()
-}
-
-// Block statement
-type BlockStatement struct {
-	Token      token.Token // the { token
-	Statements []Statement
-}
-
-func (bs *BlockStatement) statementNode()       {}
-func (bs *BlockStatement) TokenLiteral() string { return bs.Token.Literal }
-func (bs *BlockStatement) String() string {
-	var out bytes.Buffer
-	for _, s := range bs.Statements {
-		out.WriteString(s.String())
 	}
 	return out.String()
 }
