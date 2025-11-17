@@ -88,6 +88,16 @@ func (fl *FunctionLiteral) String() string {
 	return out.String()
 }
 
+// String literal
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (sl *StringLiteral) expressionNode()      {}
+func (sl *StringLiteral) TokenLiteral() string { return sl.Token.Literal }
+func (sl *StringLiteral) String() string       { return sl.Value }
+
 // ****** Identifier ******
 type Identifier struct {
 	Token token.Token // the token.IDENT token
